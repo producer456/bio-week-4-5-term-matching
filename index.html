@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIO Week 4–5 Term Matching</title>
-    <link rel="stylesheet" href="styles.css?v=1">
+    <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
     <header>
@@ -39,7 +39,13 @@
 
     <div id="toast" class="toast"></div>
 
-    <script src="data.js?v=1"></script>
-    <script src="app.js?v=1"></script>
+    <div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
+        <button class="lightbox-close" onclick="closeLightbox(event)" title="Close (Esc)">×</button>
+        <img id="lightbox-img" alt="Slide full size">
+        <div id="lightbox-caption" class="lightbox-caption"></div>
+    </div>
+
+    <script src="data.js?v=2"></script>
+    <script src="app.js?v=2"></script>
 </body>
 </html>

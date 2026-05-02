@@ -186,7 +186,10 @@ function renderTeacherSlides(group) {
                                 <option value="">— none —</option>
                                 ${slideOptions.replace(`value="${assigned}"`, `value="${assigned}" selected`)}
                             </select>
-                            ${slide ? `<img class="slide-thumb-mini" src="images/${slide.id}.png" alt="${escapeAttr(slide.label)}">` : ''}
+                            ${slide ? `<div class="slide-thumb-wrap">
+                                <img class="slide-thumb-mini" src="images/${slide.id}.png" alt="${escapeAttr(slide.label)}">
+                                <button class="expand-btn" onclick="openLightbox('${slide.id}')" title="View full size">⤢</button>
+                            </div>` : ''}
                         </div>
                     </div>
                 `;
@@ -285,7 +288,10 @@ function renderTargetCard(target) {
     } else {
         const slide = getSlideById(target);
         inner = slide
-            ? `<img class="slide-thumb" src="images/${slide.id}.png" alt="${escapeAttr(slide.label)}">
+            ? `<div class="slide-thumb-wrap">
+                 <img class="slide-thumb" src="images/${slide.id}.png" alt="${escapeAttr(slide.label)}">
+                 <button class="expand-btn" onclick="event.stopPropagation(); openLightbox('${slide.id}')" title="View full size">⤢</button>
+               </div>
                <div class="slide-caption">${escapeHtml(slide.label)}</div>`
             : escapeHtml(target);
     }
@@ -393,6 +399,28 @@ function escapeAttr(s) { return escapeHtml(s); }
 function cssEscape(s) {
     return (window.CSS && CSS.escape) ? CSS.escape(s) : s.replace(/"/g, '\\"');
 }
+
+// ---- Lightbox (full-screen slide viewer) ----
+function openLightbox(slideId) {
+    const slide = getSlideById(slideId);
+    if (!slide) return;
+    const lb = document.getElementById('lightbox');
+    document.getElementById('lightbox-img').src = `images/${slide.id}.png`;
+    document.getElementById('lightbox-img').alt = slide.label;
+    document.getElementById('lightbox-caption').textContent = slide.label;
+    lb.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(event) {
+    if (event && event.target.tagName === 'IMG') return; // click on image itself = no close
+    document.getElementById('lightbox').classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+});
 
 // ---- Toast ----
 function showToast(msg, type = 'info') {
