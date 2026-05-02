@@ -186,6 +186,13 @@ main { padding: 18px 24px 90px; max-width: 1200px; margin: 0 auto; }
 }
 .expand-btn:hover { background: var(--coral); transform: scale(1.1); }
 .slide-caption { font-size: 0.82rem; color: var(--ocean-mid); }
+.slide-badge {
+    position: absolute; bottom: 12px; left: 6px;
+    background: var(--coral); color: white;
+    padding: 3px 8px; border-radius: 12px;
+    font-size: 0.78rem; font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
 
 /* ---- Lightbox ---- */
 .lightbox {

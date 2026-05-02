@@ -112,6 +112,10 @@ function getSlideById(id) {
     return SLIDES.find(s => s.id === id);
 }
 
+function slideSrc(slide) {
+    return `images/${slide.id}.${slide.type || 'png'}`;
+}
+
 // ---- Render dispatch ----
 function renderAll() {
     const teacherView = document.getElementById('teacher-view');
@@ -187,7 +191,7 @@ function renderTeacherSlides(group) {
                                 ${slideOptions.replace(`value="${assigned}"`, `value="${assigned}" selected`)}
                             </select>
                             ${slide ? `<div class="slide-thumb-wrap">
-                                <img class="slide-thumb-mini" src="images/${slide.id}.png" alt="${escapeAttr(slide.label)}">
+                                <img class="slide-thumb-mini" src="${slideSrc(slide)}" alt="${escapeAttr(slide.label)}">
                                 <button class="expand-btn" onclick="openLightbox('${slide.id}')" title="View full size">⤢</button>
                             </div>` : ''}
                         </div>
@@ -236,7 +240,11 @@ function renderStudent() {
     // Initialize shuffled lists if first render of this state
     if (leftItems.length === 0) {
         leftItems = pairs.map(p => p.term);
-        rightItems = pairs.map(p => p.target);
+        // For slides activity, deduplicate the right column so a single diagram
+        // appears once even when multiple terms map to it.
+        rightItems = currentActivity === 'slides'
+            ? [...new Set(pairs.map(p => p.target))]
+            : pairs.map(p => p.target);
         shuffle(leftItems);
         shuffle(rightItems);
     }
@@ -287,10 +295,14 @@ function renderTargetCard(target) {
         inner = escapeHtml(target);
     } else {
         const slide = getSlideById(target);
+        const total = leftItems.filter(t => userData.slides[t] === target).length;
+        const matched = leftItems.filter(t => userData.slides[t] === target && pairedLeft.has(t)).length;
+        const badge = total > 1 ? `<div class="slide-badge">${matched} / ${total}</div>` : '';
         inner = slide
             ? `<div class="slide-thumb-wrap">
-                 <img class="slide-thumb" src="images/${slide.id}.png" alt="${escapeAttr(slide.label)}">
+                 <img class="slide-thumb" src="${slideSrc(slide)}" alt="${escapeAttr(slide.label)}">
                  <button class="expand-btn" onclick="event.stopPropagation(); openLightbox('${slide.id}')" title="View full size">⤢</button>
+                 ${badge}
                </div>
                <div class="slide-caption">${escapeHtml(slide.label)}</div>`
             : escapeHtml(target);
@@ -356,7 +368,13 @@ function attemptPair(term, target) {
 
     if (correct) {
         pairedLeft.add(term);
-        pairedRight.add(target);
+        // For slides, only mark target paired when ALL terms mapping to it are paired
+        if (currentActivity === 'slides') {
+            const remaining = leftItems.filter(t => userData.slides[t] === target && !pairedLeft.has(t));
+            if (remaining.length === 0) pairedRight.add(target);
+        } else {
+            pairedRight.add(target);
+        }
         selectedLeft = null;
         selectedRight = null;
         renderStudent();
@@ -405,7 +423,7 @@ function openLightbox(slideId) {
     const slide = getSlideById(slideId);
     if (!slide) return;
     const lb = document.getElementById('lightbox');
-    document.getElementById('lightbox-img').src = `images/${slide.id}.png`;
+    document.getElementById('lightbox-img').src = slideSrc(slide);
     document.getElementById('lightbox-img').alt = slide.label;
     document.getElementById('lightbox-caption').textContent = slide.label;
     lb.classList.add('show');

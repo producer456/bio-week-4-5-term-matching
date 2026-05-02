@@ -32,7 +32,14 @@ const SLIDES = [
     {id: 'neuron_golgi', label: 'Multipolar Neurons — Golgi Stain (Brain)'},
     {id: 'peripheral_nerve', label: 'Peripheral Nerve — Long & Cross'},
     {id: 'dorsal_root_ganglion', label: 'Dorsal Root Ganglion'},
-    {id: 'blood_smear', label: 'Peripheral Blood Smear'}
+    {id: 'blood_smear', label: 'Peripheral Blood Smear'},
+    // OpenStax A&P 2e diagrams (CC BY 4.0) — added to cover multi-term concepts
+    {id: 'skin_layers', label: 'Layers of the Epidermis (OpenStax Fig 5.5)', type: 'jpg'},
+    {id: 'cell_junctions', label: 'Cell Junctions (OpenStax Fig 4.5)', type: 'jpg'},
+    {id: 'epithelium_structure', label: 'Cells of Epithelial Tissue (OpenStax Fig 4.8)', type: 'jpg'},
+    {id: 'gland_secretion_modes', label: 'Modes of Glandular Secretion (OpenStax Fig 4.10)', type: 'jpg'},
+    {id: 'tissue_membranes', label: 'Tissue Membranes (OpenStax Fig 4.4)', type: 'jpg'},
+    {id: 'wound_healing', label: 'Tissue Healing (OpenStax Fig 4.21)', type: 'jpg'}
 ];
 
 const TERM_GROUPS = [
@@ -150,30 +157,85 @@ const DEFAULT_DEFINITIONS = {
     'stratum spinosum': 'Spiny-appearing epidermal layer above the basale where keratinocytes are joined by desmosomes and Langerhans immune cells reside.'
 };
 
-// Default slide assignments — kept 1:1 within each group so the matching game
-// has unique pairs. Teacher mode lets users override or extend.
+// Default slide assignments — many terms can share a slide (multi-label diagrams).
+// The matching game treats slides as drop targets that accept multiple terms.
 const DEFAULT_SLIDE_ASSIGNMENTS = {
-    // ch4_tissue_types (each term maps to a unique slide)
+    // ch4_tissue_types — unique micrographs per term
     'cardiac muscle': 'cardiac_intercalated',
     'skeletal muscle': 'skeletal_long',
     'smooth muscle': 'smooth_muscle',
+    'striation': 'skeletal_long',
     'nervous tissue': 'neuron_golgi',
+
     // ch4_neural
     'neuron': 'neuron_golgi',
     'Schwann cell': 'peripheral_nerve',
-    'astrocyte': 'dorsal_root_ganglion',
+    'myelin': 'peripheral_nerve',
+
     // ch4_ct_cells
     'adipocytes': 'adipose_white',
     'chondrocytes': 'hyaline_cartilage_trachea',
     'fibroblast': 'areolar_mesentery',
     'fibrocyte': 'dense_regular_tendon',
     'mesenchymal cell': 'mucous_ct_umbilical',
-    // ch4_membranes
-    'cutaneous membrane': 'strat_squamous_keratinized',
-    'mucous membrane': 'simple_columnar_jejunum',
-    'serous membrane': 'simple_squamous_pavement',
+
+    // ch4_epithelium — basement membrane components on epithelium diagram
+    'apical': 'epithelium_structure',
+    'basal lamina': 'epithelium_structure',
+    'basement membrane': 'epithelium_structure',
+    'reticular lamina': 'epithelium_structure',
+    'lamina propria': 'simple_columnar_jejunum',
+
+    // ch4_junctions — all on the OpenStax junctions diagram
+    'cell junction': 'cell_junctions',
+    'anchoring junction': 'cell_junctions',
+    'desmosome': 'cell_junctions',
+    'hemidesmosomes': 'cell_junctions',
+    'adherens': 'cell_junctions',
+    'gap junction': 'cell_junctions',
+    'tight junction': 'cell_junctions',
+
+    // ch4_glands — secretion modes on one diagram, others on micrographs
+    'apocrine secretion': 'gland_secretion_modes',
+    'merocrine secretion': 'gland_secretion_modes',
+    'holocrine secretion': 'gland_secretion_modes',
+    'goblet cell': 'simple_columnar_jejunum',
+    'mucous gland': 'pseudostratified_trachea',
+    'serous gland': 'simple_cuboidal_pancreas',
+
+    // ch4_membranes — overview diagram + relevant micrographs
+    'cutaneous membrane': 'tissue_membranes',
+    'mucous membrane': 'tissue_membranes',
+    'serous membrane': 'tissue_membranes',
+    'synovial membrane': 'tissue_membranes',
+    'epithelial membrane': 'tissue_membranes',
+    'connective tissue membrane': 'tissue_membranes',
+    'tissue membrane': 'tissue_membranes',
+
+    // ch4_response — wound healing diagram covers most
+    'inflammation': 'wound_healing',
+    'clotting': 'wound_healing',
+    'wound contraction': 'wound_healing',
+    'primary union': 'wound_healing',
+    'secondary union': 'wound_healing',
+
     // ch5_overview
-    'epidermis': 'strat_squamous_keratinized',
+    'epidermis': 'skin_layers',
     'dermis': 'dense_irregular_dermis',
-    'hypodermis': 'adipose_white'
+    'hypodermis': 'adipose_white',
+    'dermal papilla': 'skin_layers',
+    'papillary layer': 'dense_irregular_dermis',
+    'reticular layer': 'dense_irregular_dermis',
+
+    // ch5_strata — all on the skin layers diagram
+    'stratum basale': 'skin_layers',
+    'stratum spinosum': 'skin_layers',
+    'stratum granulosum': 'skin_layers',
+    'stratum lucidum': 'skin_layers',
+    'stratum corneum': 'skin_layers',
+
+    // ch5_cells — most visible on skin layers diagram
+    'basal cell': 'skin_layers',
+    'keratinocyte': 'skin_layers',
+    'melanocyte': 'skin_layers'
 };
