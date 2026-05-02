@@ -27,13 +27,15 @@ function loadUserData() {
             const data = JSON.parse(raw);
             return {
                 definitions: { ...DEFAULT_DEFINITIONS, ...(data.definitions || {}) },
-                slides: { ...DEFAULT_SLIDE_ASSIGNMENTS, ...(data.slides || {}) }
+                slides: { ...DEFAULT_SLIDE_ASSIGNMENTS, ...(data.slides || {}) },
+                uploadedSlides: data.uploadedSlides || {}
             };
         }
     } catch (e) { /* fall through */ }
     return {
         definitions: { ...DEFAULT_DEFINITIONS },
-        slides: { ...DEFAULT_SLIDE_ASSIGNMENTS }
+        slides: { ...DEFAULT_SLIDE_ASSIGNMENTS },
+        uploadedSlides: {}
     };
 }
 
@@ -86,11 +88,18 @@ function setupActivityTabs() {
 
 function renderGroupTabs() {
     const nav = document.getElementById('group-tabs');
-    nav.innerHTML = TERM_GROUPS.map(g =>
+    let html = TERM_GROUPS.map(g =>
         `<button class="group-tab ${g.id === currentGroup ? 'active' : ''}" data-group="${g.id}">
             <span class="group-chapter">Ch ${g.chapter}</span> ${g.title}
         </button>`
     ).join('');
+    const catchall = getCatchAllGroup();
+    if (catchall.terms.length > 0) {
+        html += `<button class="group-tab catchall-tab ${currentGroup === '_catchall' ? 'active' : ''}" data-group="_catchall" title="Terms without a built-in slide">
+            <span class="group-chapter">★</span> ${escapeHtml(catchall.title)} (${catchall.terms.length})
+        </button>`;
+    }
+    nav.innerHTML = html;
 }
 
 function setupGroupTabs() {
@@ -105,14 +114,27 @@ function setupGroupTabs() {
 }
 
 function getCurrentGroup() {
+    if (currentGroup === '_catchall') return getCatchAllGroup();
     return TERM_GROUPS.find(g => g.id === currentGroup);
 }
 
+function getCatchAllGroup() {
+    const orphanTerms = TERM_GROUPS.flatMap(g => g.terms).filter(t => !userData.slides[t]);
+    return { id: '_catchall', chapter: '★', title: 'Needs Slide — Upload Your Own', terms: orphanTerms };
+}
+
 function getSlideById(id) {
+    if (id && id.startsWith('_upload_')) {
+        const term = id.slice('_upload_'.length);
+        const dataUrl = userData.uploadedSlides[term];
+        if (dataUrl) return { id, label: `(your upload) ${term}`, dataUrl, isCustom: true };
+        return null;
+    }
     return SLIDES.find(s => s.id === id);
 }
 
 function slideSrc(slide) {
+    if (slide.dataUrl) return slide.dataUrl;
     return `images/${slide.id}.${slide.type || 'png'}`;
 }
 
@@ -146,6 +168,19 @@ function renderTeacher() {
                 if (val) userData.slides[term] = val;
                 else delete userData.slides[term];
                 renderTeacher();
+                renderGroupTabs();
+            });
+        });
+        view.querySelectorAll('.upload-input').forEach(input => {
+            input.addEventListener('change', (e) => handleUpload(e.target));
+        });
+        view.querySelectorAll('.remove-upload-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const term = btn.dataset.term;
+                delete userData.uploadedSlides[term];
+                if (userData.slides[term] === `_upload_${term}`) delete userData.slides[term];
+                renderTeacher();
+                renderGroupTabs();
             });
         });
     }
@@ -172,16 +207,20 @@ function renderTeacherSlides(group) {
     const slideOptions = SLIDES.map(s =>
         `<option value="${s.id}">${escapeHtml(s.label)}</option>`
     ).join('');
+    const isCatchAll = group.id === '_catchall';
 
     return `
         <div class="teacher-header">
             <h2>${escapeHtml(group.title)} — Slide Assignments</h2>
-            <p class="teacher-hint">Choose the histology slide that best illustrates each term, or leave blank to skip in the slide-matching game.</p>
+            <p class="teacher-hint">${isCatchAll
+                ? 'These terms don\'t have a built-in slide. Pick a built-in slide that fits, OR upload your own image from this device.'
+                : 'Choose the histology slide that best illustrates each term, or leave blank to skip.'}</p>
         </div>
         <div class="teacher-rows">
             ${group.terms.map(term => {
                 const assigned = userData.slides[term] || '';
                 const slide = getSlideById(assigned);
+                const hasUpload = !!userData.uploadedSlides[term];
                 return `
                     <div class="teacher-row teacher-row-slide">
                         <label class="row-term">${escapeHtml(term)}</label>
@@ -189,7 +228,13 @@ function renderTeacherSlides(group) {
                             <select class="slide-select" data-term="${escapeAttr(term)}">
                                 <option value="">— none —</option>
                                 ${slideOptions.replace(`value="${assigned}"`, `value="${assigned}" selected`)}
+                                ${hasUpload ? `<option value="_upload_${escapeAttr(term)}" ${assigned === '_upload_' + term ? 'selected' : ''}>(your upload)</option>` : ''}
                             </select>
+                            <label class="upload-btn" title="Upload your own image">
+                                ${hasUpload ? '↻' : '+'}
+                                <input type="file" accept="image/*" data-term="${escapeAttr(term)}" class="upload-input" hidden>
+                            </label>
+                            ${hasUpload ? `<button class="remove-upload-btn" data-term="${escapeAttr(term)}" title="Remove your upload">×</button>` : ''}
                             ${slide ? `<div class="slide-thumb-wrap">
                                 <img class="slide-thumb-mini" src="${slideSrc(slide)}" alt="${escapeAttr(slide.label)}">
                                 <button class="expand-btn" onclick="openLightbox('${slide.id}')" title="View full size">⤢</button>
@@ -200,6 +245,30 @@ function renderTeacherSlides(group) {
             }).join('')}
         </div>
     `;
+}
+
+function handleUpload(input) {
+    const term = input.dataset.term;
+    const file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+        if (!confirm(`That image is ${(file.size/1024/1024).toFixed(1)} MB. Browser storage is limited (~5 MB total). Continue?`)) return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            userData.uploadedSlides[term] = e.target.result;
+            userData.slides[term] = `_upload_${term}`;
+            renderTeacher();
+            renderGroupTabs();
+            showToast('Image uploaded — Save to keep it', 'success');
+        } catch (err) {
+            showToast('Upload failed: ' + err.message, 'error');
+        }
+    };
+    reader.onerror = () => showToast('Read failed', 'error');
+    reader.readAsDataURL(file);
 }
 
 // ---- Student mode ----
@@ -483,7 +552,8 @@ function importData(event) {
             if (!confirm('Import will OVERWRITE your saved data. Continue?')) return;
             userData = {
                 definitions: { ...DEFAULT_DEFINITIONS, ...(payload.data.definitions || {}) },
-                slides: { ...DEFAULT_SLIDE_ASSIGNMENTS, ...(payload.data.slides || {}) }
+                slides: { ...DEFAULT_SLIDE_ASSIGNMENTS, ...(payload.data.slides || {}) },
+                uploadedSlides: payload.data.uploadedSlides || {}
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
             renderAll();

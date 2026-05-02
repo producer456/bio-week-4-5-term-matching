@@ -39,7 +39,12 @@ const SLIDES = [
     {id: 'epithelium_structure', label: 'Cells of Epithelial Tissue (OpenStax Fig 4.8)', type: 'jpg'},
     {id: 'gland_secretion_modes', label: 'Modes of Glandular Secretion (OpenStax Fig 4.10)', type: 'jpg'},
     {id: 'tissue_membranes', label: 'Tissue Membranes (OpenStax Fig 4.4)', type: 'jpg'},
-    {id: 'wound_healing', label: 'Tissue Healing (OpenStax Fig 4.21)', type: 'jpg'}
+    {id: 'wound_healing', label: 'Tissue Healing (OpenStax Fig 4.21)', type: 'jpg'},
+    {id: 'skin_full_cross_section', label: 'Layers of the Skin — Full Cross-Section (OpenStax Fig 5.2)', type: 'jpg'},
+    {id: 'neuroglia_cns', label: 'Glial Cells of the CNS (OpenStax Fig 12.11)', type: 'jpg'},
+    {id: 'neuroglia_pns', label: 'Glial Cells of the PNS (OpenStax Fig 12.12)', type: 'jpg'},
+    {id: 'apoptosis_necrosis', label: 'Apoptosis vs Necrosis (Wikimedia, public domain)', type: 'png'},
+    {id: 'inflammation_cascade', label: 'Inflammatory Response (OpenStax Fig 21.14)', type: 'jpg'}
 ];
 
 const TERM_GROUPS = [
@@ -171,6 +176,9 @@ const DEFAULT_SLIDE_ASSIGNMENTS = {
     'neuron': 'neuron_golgi',
     'Schwann cell': 'peripheral_nerve',
     'myelin': 'peripheral_nerve',
+    'neuroglia': 'neuroglia_cns',
+    'astrocyte': 'neuroglia_cns',
+    'oligodendrocyte': 'neuroglia_cns',
 
     // ch4_ct_cells
     'adipocytes': 'adipose_white',
@@ -212,17 +220,22 @@ const DEFAULT_SLIDE_ASSIGNMENTS = {
     'connective tissue membrane': 'tissue_membranes',
     'tissue membrane': 'tissue_membranes',
 
-    // ch4_response — wound healing diagram covers most
-    'inflammation': 'wound_healing',
+    // ch4_response
+    'inflammation': 'inflammation_cascade',
+    'histamine': 'inflammation_cascade',
+    'vasodilation': 'inflammation_cascade',
     'clotting': 'wound_healing',
     'wound contraction': 'wound_healing',
     'primary union': 'wound_healing',
     'secondary union': 'wound_healing',
+    'apoptosis': 'apoptosis_necrosis',
+    'necrosis': 'apoptosis_necrosis',
 
     // ch5_overview
+    'integumentary system': 'skin_full_cross_section',
     'epidermis': 'skin_layers',
     'dermis': 'dense_irregular_dermis',
-    'hypodermis': 'adipose_white',
+    'hypodermis': 'skin_full_cross_section',
     'dermal papilla': 'skin_layers',
     'papillary layer': 'dense_irregular_dermis',
     'reticular layer': 'dense_irregular_dermis',
@@ -237,5 +250,7 @@ const DEFAULT_SLIDE_ASSIGNMENTS = {
     // ch5_cells — most visible on skin layers diagram
     'basal cell': 'skin_layers',
     'keratinocyte': 'skin_layers',
-    'melanocyte': 'skin_layers'
+    'melanocyte': 'skin_layers',
+    'Pacinian corpuscle': 'skin_full_cross_section'
+    // Langerhans cell, Merkel cell, Meissner corpuscle: no built-in slide; appear in catch-all for upload
 };
